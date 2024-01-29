@@ -12,8 +12,8 @@ function App() {
     setSelectedCategory(category);
   };
 
-  const handleRestartQuiz = () => {
-    setSelectedCategory(null);
+  const handleRestartQuiz = (category) => {
+    setSelectedCategory(category);
   };
 
   return (
