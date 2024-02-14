@@ -1,5 +1,3 @@
-// src/components/Quiz.jsx
-
 import React, { useState } from 'react';
 import GameScreen from './GameScreen';
 

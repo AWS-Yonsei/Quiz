@@ -1,26 +1,30 @@
 import React, { useState } from 'react';
 import CategorySelection from './components/CategorySelection';
 import Quiz from './components/Quiz';
-import quizData from './data/quizData';
+import diabetesQuiz from './data/diabetesQuiz.json';
+import highbloodpressureQuiz from './data/highbloodpressureQuiz.json';
 
 function App() {
   const [selectedCategory, setSelectedCategory] = useState(null);
-
-  const categories = []; 
+  const [quizData, setQuizData] = useState(null);
 
   const handleCategorySelect = (category) => {
     setSelectedCategory(category);
+    if (category === '당뇨병') {
+      setQuizData(diabetesQuiz);
+    } else if (category === '고혈압') {
+      setQuizData(highbloodpressureQuiz);
+    } // 나머지 카테고리에 대한 로직 추가
   };
 
-  const handleRestartQuiz = (category) => {
-    setSelectedCategory(category);
+  const handleRestartQuiz = () => {
+    setSelectedCategory(null);
   };
 
   return (
     <div className="App">
       {!selectedCategory ? (
         <CategorySelection
-          categories={categories}
           onSelectCategory={handleCategorySelect}
         />
       ) : (
@@ -31,3 +35,4 @@ function App() {
 }
 
 export default App;
+

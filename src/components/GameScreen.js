@@ -4,9 +4,13 @@ import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import Modal from 'react-modal';
 
-import EnemyImage from '../images/Enemy.jpg';
-import CharacterImage from '../images/Character.jpg';
+import EnemyImage from '../images/Enemy.png';
+import CharacterImage from '../images/Character.png';
 import background from "../images/background.png";
+import sword from "../images/sword.png";
+
+import diabetesQuiz from '../data/diabetesQuiz.json'; 
+import highbloodpressureQuiz from '../data/highbloodpressureQuiz.json';
 
 
 const modalStyles = {
@@ -20,6 +24,7 @@ const modalStyles = {
   },
 };
 
+
 var state = "";
 var iswin = "";
 
@@ -32,6 +37,7 @@ const GameScreen = ({ questionData, onAnswer, onGameOver, onCategorySelect, onRe
   const [enemyHP, setEnemyHP] = useState(100);
   const [modalIsOpen, setModalIsOpen] = useState(false);
   const [modalIsOpen2, setModalIsOpen2] = useState(false);
+  const [selectedCategory, setSelectedCategory] = useState(null);
 
   useEffect(() => {
     if (playerHP <= 0) {
@@ -46,43 +52,22 @@ const GameScreen = ({ questionData, onAnswer, onGameOver, onCategorySelect, onRe
     }
   }, [playerHP, enemyHP]);
 
+  const getQuestionData = () => {
+    switch(selectedCategory) {
+      case 'diabetes':
+        return diabetesQuiz;
+      case 'highbloodpressure':
+        return highbloodpressureQuiz;
+      default:
+        return null; 
+    }
+  };
+
   const handleAnswerClick = (answer) => {
     setSelectedAnswer(answer);
   };
 
-  const handleRestartGame = () => {
-    // 게임 재시작
-    setIsGameOver(false);
-    setPlayerHP(100);
-    setEnemyHP(100);
-    setSelectedAnswer(null);
-    setCurrentQuestion(0);
-    if (typeof onRestart === 'function') {
-      onRestart();
-    }
-  };
-
   const handleSubmitAnswer = () => {
-    if (selectedAnswer !== null && !isGameOver) {
-      const correctAnswer = questionData.correctAnswer1;
-      const isCorrect = selectedAnswer === correctAnswer; 
-
-      if (isCorrect) {
-        setModalIsOpen(true);
-        //toast.success('정답입니다!', { autoClose: 1500 });
-        state = "correct";
-        setEnemyHP(enemyHP - 20);       
-        
-        
-      } else {
-        setModalIsOpen(true);
-        //toast.error(`틀렸습니다! 정답은 ${correctAnswer} 입니다.`, { autoClose: 1500 });
-        state = "wrong";
-        setPlayerHP(playerHP - 20);
-        
-
-        }
-      
 
       const isGameFinished = false; 
 
@@ -94,9 +79,27 @@ const GameScreen = ({ questionData, onAnswer, onGameOver, onCategorySelect, onRe
         onAnswer(isCorrect);
         setSelectedAnswer(null);
       }
+    
+  };
+  const handleSubmitAttack = () => {
+    if (selectedAnswer !== null && !isGameOver) {
+      const correctAnswer = questionData.correctAnswer;
+      const isCorrect = selectedAnswer === correctAnswer; 
+
+      if (isCorrect) {
+        setModalIsOpen(true);
+        state = "correct";
+        setEnemyHP(enemyHP - 20);       
+        
+        
+      } else {
+        setModalIsOpen(true);
+        state = "wrong"
+        setPlayerHP(playerHP - 20);
+        
+        }
     }
   };
-
 
   const handleCategorySelect = () => {
     setIsGameOver(false);
@@ -112,7 +115,6 @@ const GameScreen = ({ questionData, onAnswer, onGameOver, onCategorySelect, onRe
   const renderGameOverScreen = () => {
     return (
       <div>
-        <h2>{isGameOver ? (isCorrect ? '승리하였습니다!' : '패배하였습니다!') : ''}</h2>
       </div>
     );
   };
@@ -156,15 +158,23 @@ const GameScreen = ({ questionData, onAnswer, onGameOver, onCategorySelect, onRe
     },
     answersContainer: {
       textAlign: 'center',
+      flexDirection: 'row',
       width: '100%',
     },
     answerButton: {
       cursor: 'pointer',
       padding: '10px',
       margin: '5px',
+      marginTop: '-70px',
       border: '1px solid #ccc',
       borderRadius: '5px',
-      fontSize: '1em',
+      flexDirection: 'row',
+      display: 'flex', 
+      alignItems: 'center', 
+      justifyContent: 'center',
+      fontSize: '400px',
+      width: '350px', 
+      height: '350px',
     },
   };
 
@@ -172,7 +182,7 @@ const GameScreen = ({ questionData, onAnswer, onGameOver, onCategorySelect, onRe
     <div style={styles.container}>
       <div style={styles.rowContainer}>
         <div style={styles.characterContainer}>
-            <img src={CharacterImage} alt="주인공" style={{ width: '100px', height: '100px' }} />
+            <img src={CharacterImage} alt="주인공" style={{ width: '200px', height: '200px' }} />
             <div style={{ ...styles.healthBar, backgroundColor: 'blue', width: `${playerHP}%` }}></div>
             <p>HP: {playerHP}</p>
           </div>
@@ -182,28 +192,44 @@ const GameScreen = ({ questionData, onAnswer, onGameOver, onCategorySelect, onRe
         </div>
 
         <div style={styles.characterContainer}>
-          <img src={EnemyImage} alt="질병" style={{ width: '100px', height: '100px' }} />
+          <img src={EnemyImage} alt="질병" style={{ width: '200px', height: '200px' }} />
           <div style={{ ...styles.healthBar, width: `${enemyHP}%` }}></div>
           <p>HP: {enemyHP}</p>
         </div>
       </div>
 
-      <div style={styles.answersContainer}>
-        {questionData.options.map((option, index) => (
-          <div
-            key={index}
-            onClick={() => handleAnswerClick(option)}
+      <div style={{ display: 'flex', flexDirection: 'row' }}>
+        <div
+            onClick={() => handleAnswerClick('O')}
             style={{
-              ...styles.answerButton,
-              backgroundColor: selectedAnswer === option ? 'lightblue' : 'white',
+              ...styles.answerButton,            
+              marginRight: '10px',  
+              paddingBottom: '35px',
+              backgroundColor: selectedAnswer === 'O' ? 'lightblue' : 'white',
             }}
           >
-            {option}
+            O
           </div>
-        ))}
-        <button onClick={handleSubmitAnswer}>답 제출</button>
-      </div>
 
+          <button onClick={handleSubmitAttack} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', width: '180px', height: '180px', marginTop: '50px'}}>
+          <img src={sword} alt="Sword" style={{ width: '150px', height: '150px'}} />
+            <span style={{fontSize : '20px'}}>공격하기</span>
+          </button>
+
+          
+          <div
+          onClick={() => handleAnswerClick('X')}
+          style={{
+            ...styles.answerButton,            
+            marginLeft: '10px',
+            paddingBottom: '35px',
+            backgroundColor: selectedAnswer === 'X' ? 'lightblue' : 'white',
+          }}
+        >
+          X
+        </div>
+      </div>
+      
       <Modal
         isOpen={modalIsOpen2} 
         onRequestClose={() => setModalIsOpen2(false)} 
@@ -220,13 +246,13 @@ const GameScreen = ({ questionData, onAnswer, onGameOver, onCategorySelect, onRe
         style={modalStyles}
       >
         <h2>{state === "correct" && <p>정답입니다. <br></br>{questionData.reason}</p>}</h2>
-        <h2>{state === "wrong" && <p>오답입니다. <br></br>답은 {questionData.correctAnswer}입니다. <br></br>{questionData.reason}</p>}</h2>
+        <h2>{state === "wrong" && <p>오답입니다. <br></br>{questionData.reason}</p>}</h2>
         
-        <button onClick={() => setModalIsOpen(false)}>확인</button>
+        <button onClick={() => {
+          setModalIsOpen(false); 
+          handleSubmitAnswer(); 
+        }}>확인</button>
       </Modal>
-
-      
-
 
       <ToastContainer position="bottom-center" autoClose={3000} />
 
@@ -234,4 +260,5 @@ const GameScreen = ({ questionData, onAnswer, onGameOver, onCategorySelect, onRe
     </div>
   );
 };
+
 export default GameScreen;

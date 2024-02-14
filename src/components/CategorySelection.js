@@ -5,7 +5,7 @@ const CategorySelection = ({ onSelectCategory }) => {
   const styles = {
     container: {
       textAlign: 'center',
-      backgroundImage: `url(${background})`
+      //backgroundImage: `url(${background})`
     },
     title: {
       fontSize: '2em',
