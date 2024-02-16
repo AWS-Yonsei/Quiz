@@ -1,4 +1,5 @@
 // GameScreen.js
+import axios from 'axios'
 import React, { useState, useEffect } from 'react';
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
@@ -40,17 +41,47 @@ const GameScreen = ({ questionData, onAnswer, onGameOver, onCategorySelect, onRe
   const [selectedCategory, setSelectedCategory] = useState(null);
 
   useEffect(() => {
-    if (playerHP <= 0) {
-      iswin = "false";
-      setModalIsOpen2(true);
-      setIsGameOver(true);
-    }
-    if (enemyHP <= 0) {
-      iswin = "true";
-      setModalIsOpen2(true);
-      setIsGameOver(true);
-    }
-  }, [playerHP, enemyHP]);
+    const recordQuizResult = async () => {
+      try {
+        if (isGameOver) {
+          const quizResults = [];
+          // 플레이어의 HP가 0 이하이면 패배
+          if (playerHP <= 0) {
+            iswin = "false";
+            setModalIsOpen2(true);
+            setIsGameOver(true);
+          }
+          // 적의 HP가 0 이하이면 승리
+          if (enemyHP <= 0) {
+            iswin = "true";
+            setModalIsOpen2(true);
+            setIsGameOver(true);
+          }
+  
+          // 플레이어가 맞춘 문제의 결과를 기록
+          for (let i = 0; i < diabetesQuiz.length; i++) {
+            const quiz = diabetesQuiz[i];
+            const result = {
+              qid: i + 1, // 문제 번호 (1부터 시작)
+              result: quiz.correctAnswer === selectedAnswer, // 문제를 맞추면 true, 틀리면 false
+              comment: quiz.reason // 문제의 이유
+            };
+            quizResults.push(result);
+          }
+  
+          // 게임 결과를 기록하는 API 호출
+          const quizResultData = {
+            uid: "user2",//여기 어떻게해야하는지 모르겠어요 user별로 uid 다르게하기
+            quiz_results: quizResults
+          };
+        }
+      } catch (error) {
+        console.error('Error while recording quiz result:', error);
+      }
+    };
+  
+    recordQuizResult();
+  }, [playerHP, enemyHP, isGameOver, selectedAnswer, setIsGameOver, setModalIsOpen2, diabetesQuiz]);
 
   const getQuestionData = () => {
     switch(selectedCategory) {
@@ -62,6 +93,7 @@ const GameScreen = ({ questionData, onAnswer, onGameOver, onCategorySelect, onRe
         return null; 
     }
   };
+
 
   const handleAnswerClick = (answer) => {
     setSelectedAnswer(answer);
