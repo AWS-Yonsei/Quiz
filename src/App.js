@@ -14,7 +14,7 @@ function App() {
       setQuizData(diabetesQuiz);
     } else if (category === '고혈압') {
       setQuizData(highbloodpressureQuiz);
-    } // 나머지 카테고리에 대한 로직 추가
+    } 
   };
 
   const handleRestartQuiz = () => {

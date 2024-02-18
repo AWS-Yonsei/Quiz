@@ -1,5 +1,5 @@
 // GameScreen.js
-import axios from 'axios'
+import axios from 'axios';
 import React, { useState, useEffect } from 'react';
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
@@ -13,6 +13,7 @@ import sword from "../images/sword.png";
 import diabetesQuiz from '../data/diabetesQuiz.json'; 
 import highbloodpressureQuiz from '../data/highbloodpressureQuiz.json';
 
+const API_URL = "http://localhost:8080";
 
 const modalStyles = {
   content: {
@@ -28,8 +29,10 @@ const modalStyles = {
 
 var state = "";
 var iswin = "";
+var sendingcategory = "";
+var i = 0;
 
-const GameScreen = ({ questionData, onAnswer, onGameOver, onCategorySelect, onRestart }) => {
+const GameScreen = ({ questionData, onAnswer, onGameOver, onCategorySelect }) => {
   const [selectedAnswer, setSelectedAnswer] = useState(null);
   const [isGameOver, setIsGameOver] = useState(false);
   const [isCorrect, setIsCorrect] = useState(false);
@@ -39,61 +42,34 @@ const GameScreen = ({ questionData, onAnswer, onGameOver, onCategorySelect, onRe
   const [modalIsOpen, setModalIsOpen] = useState(false);
   const [modalIsOpen2, setModalIsOpen2] = useState(false);
   const [selectedCategory, setSelectedCategory] = useState(null);
+  const [quizResults, setQuizResults] = useState([]);
 
   useEffect(() => {
-    const recordQuizResult = async () => {
-      try {
-        if (isGameOver) {
-          const quizResults = [];
-          // 플레이어의 HP가 0 이하이면 패배
-          if (playerHP <= 0) {
-            iswin = "false";
-            setModalIsOpen2(true);
-            setIsGameOver(true);
-          }
-          // 적의 HP가 0 이하이면 승리
-          if (enemyHP <= 0) {
-            iswin = "true";
-            setModalIsOpen2(true);
-            setIsGameOver(true);
-          }
-  
-          // 플레이어가 맞춘 문제의 결과를 기록
-          for (let i = 0; i < diabetesQuiz.length; i++) {
-            const quiz = diabetesQuiz[i];
-            const result = {
-              qid: i + 1, // 문제 번호 (1부터 시작)
-              result: quiz.correctAnswer === selectedAnswer, // 문제를 맞추면 true, 틀리면 false
-              comment: quiz.reason // 문제의 이유
-            };
-            quizResults.push(result);
-          }
-  
-          // 게임 결과를 기록하는 API 호출
-          const quizResultData = {
-            uid: "user2",//여기 어떻게해야하는지 모르겠어요 user별로 uid 다르게하기
-            quiz_results: quizResults
-          };
-        }
-      } catch (error) {
-        console.error('Error while recording quiz result:', error);
-      }
-    };
-  
-    recordQuizResult();
-  }, [playerHP, enemyHP, isGameOver, selectedAnswer, setIsGameOver, setModalIsOpen2, diabetesQuiz]);
+    if (playerHP <= 0) {
+      iswin = "false";
+      setModalIsOpen2(true);
+      setIsGameOver(true);
+    }
+    if (enemyHP <= 0) {
+      iswin = "true";
+      setModalIsOpen2(true);
+      setIsGameOver(true);
+    }
+  }, [playerHP, enemyHP]);
+
 
   const getQuestionData = () => {
     switch(selectedCategory) {
       case 'diabetes':
+        sendingcategory = 'diabetes'
         return diabetesQuiz;
       case 'highbloodpressure':
+        sendingcategory = 'highbloodpressure'
         return highbloodpressureQuiz;
       default:
         return null; 
     }
   };
-
 
   const handleAnswerClick = (answer) => {
     setSelectedAnswer(answer);
@@ -113,10 +89,21 @@ const GameScreen = ({ questionData, onAnswer, onGameOver, onCategorySelect, onRe
       }
     
   };
+  
   const handleSubmitAttack = () => {
     if (selectedAnswer !== null && !isGameOver) {
       const correctAnswer = questionData.correctAnswer;
       const isCorrect = selectedAnswer === correctAnswer; 
+      const quiz = diabetesQuiz[i];
+
+      const result = {
+        qid: i + 1, // 문제 번호 (1부터 시작)
+        content : "Jane Smith",
+        result: isCorrect, // 문제를 맞추면 true, 틀리면 false
+        comment: quiz.reason // 문제의 이유
+      }
+      setQuizResults(prevQuizResults => [...prevQuizResults, result]);
+      i++
 
       if (isCorrect) {
         setModalIsOpen(true);
@@ -130,19 +117,24 @@ const GameScreen = ({ questionData, onAnswer, onGameOver, onCategorySelect, onRe
         setPlayerHP(playerHP - 20);
         
         }
+              
     }
   };
 
-  const handleCategorySelect = () => {
-    setIsGameOver(false);
-    setPlayerHP(100);
-    setEnemyHP(100);
-    setSelectedAnswer(null);
 
-    if (typeof onCategorySelect === 'function') {
-      onCategorySelect();
-    }
-  };
+  const sendData = async () => {
+    console.log('work');
+    console.log(quizResults);
+    return axios
+    .post(API_URL+'/quiz/result', { 
+      uid: 'user2',
+      category: sendingcategory,
+      quiz_results: quizResults})
+      .then((response) => {
+        console.log(response);
+        return response;
+  })
+}
 
   const renderGameOverScreen = () => {
     return (
@@ -269,7 +261,7 @@ const GameScreen = ({ questionData, onAnswer, onGameOver, onCategorySelect, onRe
       >
         <h2>{state === "correct" && iswin === "true" && <p>승리하셨습니다.</p>}</h2>
         <h2>{state === "wrong" && iswin === "false" && <p>패배하셨습니다.</p>}</h2>
-        <button onClick={() => handleCategorySelect}>확인</button>
+        <button onClick={() => sendData()}>확인</button>
       </Modal>
 
       <Modal
