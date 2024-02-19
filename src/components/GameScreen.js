@@ -9,6 +9,7 @@ import EnemyImage from '../images/Enemy.png';
 import CharacterImage from '../images/Character.png';
 import background from "../images/background.png";
 import sword from "../images/sword.png";
+import { sendData } from '../App';
 
 import diabetesQuiz from '../data/diabetesQuiz.json'; 
 import highbloodpressureQuiz from '../data/highbloodpressureQuiz.json';
@@ -29,7 +30,6 @@ const modalStyles = {
 
 var state = "";
 var iswin = "";
-var sendingcategory = "";
 var i = 0;
 
 const GameScreen = ({ questionData, onAnswer, onGameOver, onCategorySelect }) => {
@@ -43,6 +43,7 @@ const GameScreen = ({ questionData, onAnswer, onGameOver, onCategorySelect }) =>
   const [modalIsOpen2, setModalIsOpen2] = useState(false);
   const [selectedCategory, setSelectedCategory] = useState(null);
   const [quizResults, setQuizResults] = useState([]);
+  const [sendingcategory, setSendingCategory] = useState(null); 
 
   useEffect(() => {
     if (playerHP <= 0) {
@@ -57,19 +58,6 @@ const GameScreen = ({ questionData, onAnswer, onGameOver, onCategorySelect }) =>
     }
   }, [playerHP, enemyHP]);
 
-
-  const getQuestionData = () => {
-    switch(selectedCategory) {
-      case 'diabetes':
-        sendingcategory = 'diabetes'
-        return diabetesQuiz;
-      case 'highbloodpressure':
-        sendingcategory = 'highbloodpressure'
-        return highbloodpressureQuiz;
-      default:
-        return null; 
-    }
-  };
 
   const handleAnswerClick = (answer) => {
     setSelectedAnswer(answer);
@@ -94,13 +82,12 @@ const GameScreen = ({ questionData, onAnswer, onGameOver, onCategorySelect }) =>
     if (selectedAnswer !== null && !isGameOver) {
       const correctAnswer = questionData.correctAnswer;
       const isCorrect = selectedAnswer === correctAnswer; 
-      const quiz = diabetesQuiz[i];
 
       const result = {
         qid: i + 1, // 문제 번호 (1부터 시작)
-        content : "Jane Smith",
+        question : questionData.question,
         result: isCorrect, // 문제를 맞추면 true, 틀리면 false
-        comment: quiz.reason // 문제의 이유
+        comment: questionData.reason // 문제의 이유
       }
       setQuizResults(prevQuizResults => [...prevQuizResults, result]);
       i++
@@ -123,12 +110,10 @@ const GameScreen = ({ questionData, onAnswer, onGameOver, onCategorySelect }) =>
 
 
   const sendData = async () => {
-    console.log('work');
-    console.log(quizResults);
     return axios
     .post(API_URL+'/quiz/result', { 
       uid: 'user2',
-      category: sendingcategory,
+      category: questionData.category,
       quiz_results: quizResults})
       .then((response) => {
         console.log(response);

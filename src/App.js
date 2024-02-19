@@ -3,8 +3,10 @@ import CategorySelection from './components/CategorySelection';
 import Quiz from './components/Quiz';
 import diabetesQuiz from './data/diabetesQuiz.json';
 import highbloodpressureQuiz from './data/highbloodpressureQuiz.json';
+export const sendData = '';
 
 function App() {
+
   const [selectedCategory, setSelectedCategory] = useState(null);
   const [quizData, setQuizData] = useState(null);
 

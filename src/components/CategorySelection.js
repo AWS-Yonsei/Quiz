@@ -1,11 +1,9 @@
 import React from 'react';
-import background from "../images/background.png"
 
 const CategorySelection = ({ onSelectCategory }) => {
   const styles = {
     container: {
       textAlign: 'center',
-      //backgroundImage: `url(${background})`
     },
     title: {
       fontSize: '2em',
